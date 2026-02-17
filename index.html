@@ -531,7 +531,7 @@
                 </div>
 
                 <div class="info-box mapeos">
-                    <p><strong>💡 Tip:</strong> Puedes buscar por URL, letra o panel. Los resultados se actualizarán en tiempo real.</p>
+                    <p><strong>💡 Tip:</strong> Puedes buscar por URL o letra. Los resultados se actualizarán en tiempo real.</p>
                 </div>
 
                 <div id="messageMapeos"></div>
@@ -737,8 +737,7 @@
 
             Object.entries(mapeos).forEach(([url, info]) => {
                 const matches = 
-                    (searchTerm === '' || url.toLowerCase().includes(searchTerm) || 
-                     (info.panel && info.panel.toLowerCase().includes(searchTerm))) &&
+                    (searchTerm === '' || url.toLowerCase().includes(searchTerm)) &&
                     (letraFilter === '' || info.letra === letraFilter);
                 
                 if (matches) {
@@ -813,11 +812,10 @@
                     <thead>
                         <tr>
                             <th style="width: 40%">URL</th>
-                            <th style="width: 10%">Letra</th>
-                            <th style="width: 15%">Panel</th>
-                            <th style="width: 10%">Usos</th>
-                            <th style="width: 25%">Acciones</th>
-                        </tr>
+                            <th style="width: 15%">URL</th>
+                            <th style="width: 12%">Letra</th>
+                            <th style="width: 12%">Usos</th>
+                            <th style="width: 31
                     </thead>
                     <tbody>
             `;
@@ -829,8 +827,7 @@
                         <td><span class="letra-badge">${info.letra}</span></td>
                         <td>${info.panel || 'Sin panel'}</td>
                         <td>${info.usos || 0}</td>
-                        <td class="action-buttons">
-                            <button class="copy-btn mapeos" onclick="copiarURL('${url}')">📋 Copiar</button>
+                        <td class=" class="copy-btn mapeos" onclick="copiarURL('${url}')">📋 Copiar</button>
                             <button class="open-btn" onclick="abrirURL('${url}')">🔗 Abrir</button>
                         </td>
                     </tr>
