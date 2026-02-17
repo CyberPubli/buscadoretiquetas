@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscador Integrado - Clientify</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 16px 20px;
+            background: none;
+            border: none;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-button:hover {
+            background: #efefef;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-button.mapeos.active {
+            color: #f5576c;
+            border-bottom-color: #f5576c;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .search-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-input.mapeos:focus {
+            border-color: #f5576c;
+            box-shadow: 0 0 0 3px rgba(245, 87, 108, 0.1);
+        }
+
+        .search-button {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-button.mapeos {
+            background: #f5576c;
+        }
+
+        .search-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.95em;
+            cursor: pointer;
+        }
+
+        .info-box {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .info-box.mapeos {
+            border-left-color: #f5576c;
+        }
+
+        .info-box p {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .results-section {
+            margin-top: 30px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .results-header h2 {
+            color: #333;
+            font-size: 1.5em;
+        }
+
+        .copy-all-btn {
+            padding: 8px 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .copy-all-btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .results-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 15px;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .results-table thead {
+            background: #f5f5f5;
+        }
+
+        .results-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .results-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .results-table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .result-item {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .result-item:hover {
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+
+        .result-url {
+            word-break: break-all;
+            color: #667eea;
+            font-weight: 600;
+            font-family: 'Monaco', 'Courier New', monospace;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .result-remarks {
+            font-size: 0.85em;
+            color: #999;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+
+        .url-cell {
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.85em;
+            color: #f5576c;
+            font-weight: 600;
+            word-break: break-all;
+            max-width: 300px;
+        }
+
+        .letra-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .result-buttons, .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .action-buttons {
+            gap: 6px;
+        }
+
+        .copy-btn {
+            flex: 1;
+            padding: 8px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn.mapeos {
+            background: #f5576c;
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+
+        .open-btn {
+            flex: 1;
+            padding: 8px 12px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .open-btn:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        .loading.mapeos .spinner {
+            border-top-color: #f5576c;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #f5c6cb;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c3e6cb;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-card.mapeos {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stat-card .number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .search-section {
+                flex-direction: column;
+            }
+
+            .search-input {
+                min-width: 100%;
+            }
+
+            .results-list {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab-button {
+                border-bottom: none;
+                border-right: 3px solid transparent;
+            }
+
+            .tab-button.active {
+                border-bottom: none;
+                border-right-color: #667eea;
+            }
+
+            .tab-button.mapeos.active {
+                border-right-color: #f5576c;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Buscador Integrado Clientify</h1>
+            <p>Busca etiquetas de contactos o URLs mapeadas</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" data-tab="etiquetas" onclick="cambiarTab('etiquetas')">
+                🏷️ Buscar Etiquetas
+            </button>
+            <button class="tab-button mapeos" data-tab="mapeos" onclick="cambiarTab('mapeos')">
+                🔗 Buscar Mapeos
+            </button>
+        </div>
+
+        <div class="content">
+            <!-- TAB 1: ETIQUETAS -->
+            <div id="etiquetas-tab" class="tab-content active">
+                <div class="search-section">
+                    <input 
+                        type="text" 
+                        id="searchEtiquetas" 
+                        class="search-input" 
+                        placeholder="Ej: 13-02-37C, 12-02-37D, 11-02-37C..."
+                        autocomplete="off"
+                    >
+                    <button class="search-button" onclick="buscarEtiquetas()">Buscar</button>
+                </div>
+
+                <div class="info-box">
+                    <p><strong>💡 Tip:</strong> Ingresa la etiqueta exacta tal como aparece en remarks. La búsqueda es parcial.</p>
+                </div>
+
+                <div id="messageEtiquetas"></div>
+                <div id="statsEtiquetas"></div>
+                <div id="resultsEtiquetas"></div>
+            </div>
+
+            <!-- TAB 2: MAPEOS -->
+            <div id="mapeos-tab" class="tab-content">
+                <div class="search-section">
+                    <input 
+                        type="text" 
+                        id="searchMapeos" 
+                        class="search-input mapeos" 
+                        placeholder="Busca por URL, letra o panel..."
+                        autocomplete="off"
+                    >
+                    <button class="search-button mapeos" onclick="buscarMapeos()">Buscar</button>
+                </div>
+
+                <div class="filter-section">
+                    <label style="font-weight: 600; color: #333;">Filtrar por letra:</label>
+                    <select class="filter-select" id="letraFilter" onchange="buscarMapeos()">
+                        <option value="">Todas</option>
+                    </select>
+                    <label style="font-weight: 600; color: #333; margin-left: 20px;">Ordenar por:</label>
+                    <select class="filter-select" id="sortBy" onchange="buscarMapeos()">
+                        <option value="url">URL</option>
+                        <option value="letra">Letra</option>
+                        <option value="usos">Usos (Mayor a Menor)</option>
+                        <option value="reciente">Más Reciente</option>
+                    </select>
+                </div>
+
+                <div class="info-box mapeos">
+                    <p><strong>💡 Tip:</strong> Puedes buscar por URL, letra o panel. Los resultados se actualizarán en tiempo real.</p>
+                </div>
+
+                <div id="messageMapeos"></div>
+                <div id="statsMapeos"></div>
+                <div id="resultsMapeos"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_ETIQUETAS = 'https://accountant-services.co.uk/contacts/raw';
+        const API_MAPEOS = 'https://accountant-services.co.uk/mapeos';
+        
+        let contactos = [];
+        let mapeos = {};
+        let mapeosFiltrados = {};
+
+        // Cambiar tabs
+        function cambiarTab(tab) {
+            // Ocultar todos los tabs
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Mostrar el tab seleccionado
+            document.getElementById(tab + '-tab').classList.add('active');
+            document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+
+            // Cargar datos si es necesario
+            if (tab === 'etiquetas' && contactos.length === 0) {
+                cargarContactos();
+            } else if (tab === 'mapeos' && Object.keys(mapeos).length === 0) {
+                cargarMapeos();
+            }
+        }
+
+        // ==================== ETIQUETAS ====================
+
+        async function cargarContactos() {
+            const container = document.getElementById('resultsEtiquetas');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><p>Cargando contactos...</p></div>';
+
+            try {
+                const response = await fetch(API_ETIQUETAS);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                contactos = Array.isArray(data.datos) ? data.datos : [];
+                
+                if (contactos.length === 0) {
+                    mostrarErrorEtiquetas('No se pudieron cargar los contactos');
+                    container.innerHTML = '';
+                    return;
+                }
+
+                document.getElementById('messageEtiquetas').innerHTML = 
+                    `<div class="success">✅ ${contactos.length} contactos cargados correctamente</div>`;
+                container.innerHTML = '';
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarErrorEtiquetas(`No se pueden cargar los contactos: ${error.message}`);
+                container.innerHTML = '';
+            }
+        }
+
+        function buscarEtiquetas() {
+            const searchTerm = document.getElementById('searchEtiquetas').value.trim();
+            
+            if (!searchTerm) {
+                mostrarErrorEtiquetas('Por favor ingresa una etiqueta para buscar');
+                return;
+            }
+
+            if (contactos.length === 0) {
+                mostrarErrorEtiquetas('Contactos no cargados. Intenta recargar la página.');
+                return;
+            }
+
+            const resultados = contactos.filter(contact => {
+                const remarks = contact.remarks || '';
+                return remarks.includes(searchTerm);
+            });
+
+            mostrarResultadosEtiquetas(resultados, searchTerm);
+        }
+
+        function mostrarResultadosEtiquetas(resultados, etiqueta) {
+            const container = document.getElementById('resultsEtiquetas');
+            const messageContainer = document.getElementById('messageEtiquetas');
+
+            if (resultados.length === 0) {
+                messageContainer.innerHTML = `<div class="error">❌ No se encontraron contactos con la etiqueta: <strong>"${etiqueta}"</strong></div>`;
+                container.innerHTML = '';
+                return;
+            }
+
+            messageContainer.innerHTML = `<div class="success">✅ Se encontraron ${resultados.length} contacto(s) con la etiqueta <strong>"${etiqueta}"</strong></div>`;
+
+            const statsHTML = `
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="number">${resultados.length}</div>
+                        <div class="label">Contactos encontrados</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">${etiqueta}</div>
+                        <div class="label">Etiqueta buscada</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('statsEtiquetas').innerHTML = statsHTML;
+
+            const urls = resultados.map(c => `https://new.clientify.com/contacts/details/${c.id}`);
+            
+            let html = '<div class="results-section">';
+            html += `
+                <div class="results-header">
+                    <h2>Resultados (${resultados.length})</h2>
+                    <button class="copy-all-btn" onclick="copiarTodasEtiquetas()">📋 Copiar todas las URLs</button>
+                </div>
+            `;
+            html += '<div class="results-list">';
+
+            resultados.forEach((contact, index) => {
+                const url = urls[index];
+                const remarks = contact.remarks || 'Sin remarks';
+                
+                html += `
+                    <div class="result-item">
+                        <div class="result-url">${url}</div>
+                        <div class="result-remarks">
+                            <strong>Remarks:</strong> ${remarks}
+                        </div>
+                        <div class="result-info" style="font-size: 0.85em; color: #999; margin-bottom: 10px;">
+                            <strong>ID:</strong> ${contact.id}<br>
+                            <strong>Nombre:</strong> ${contact.first_name || 'N/A'} ${contact.last_name || ''}
+                        </div>
+                        <div class="result-buttons">
+                            <button class="copy-btn" onclick="copiarURL('${url}')">📋 Copiar</button>
+                            <button class="open-btn" onclick="abrirURL('${url}')">🔗 Abrir</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div></div>';
+            container.innerHTML = html;
+        }
+
+        function mostrarErrorEtiquetas(mensaje) {
+            const container = document.getElementById('messageEtiquetas');
+            container.innerHTML = `<div class="error">❌ ${mensaje}</div>`;
+        }
+
+        // ==================== MAPEOS ====================
+
+        async function cargarMapeos() {
+            const container = document.getElementById('resultsMapeos');
+            container.innerHTML = '<div class="loading mapeos"><div class="spinner"></div><p>Cargando mapeos...</p></div>';
+
+            try {
+                const response = await fetch(API_MAPEOS);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                mapeos = data.mapeos || {};
+                
+                if (Object.keys(mapeos).length === 0) {
+                    mostrarErrorMapeos('No se pudieron cargar los mapeos');
+                    container.innerHTML = '';
+                    return;
+                }
+
+                // Llenar opciones de filtro por letra
+                const letras = [...new Set(Object.values(mapeos).map(m => m.letra))].sort();
+                const letraSelect = document.getElementById('letraFilter');
+                letras.forEach(letra => {
+                    const option = document.createElement('option');
+                    option.value = letra;
+                    option.textContent = letra;
+                    letraSelect.appendChild(option);
+                });
+
+                document.getElementById('messageMapeos').innerHTML = 
+                    `<div class="success">✅ ${Object.keys(mapeos).length} mapeos cargados correctamente</div>`;
+                container.innerHTML = '';
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarErrorMapeos(`No se pueden cargar los mapeos: ${error.message}`);
+                container.innerHTML = '';
+            }
+        }
+
+        function buscarMapeos() {
+            const searchTerm = document.getElementById('searchMapeos').value.toLowerCase();
+            const letraFilter = document.getElementById('letraFilter').value;
+            const sortBy = document.getElementById('sortBy').value;
+
+            mapeosFiltrados = {};
+
+            Object.entries(mapeos).forEach(([url, info]) => {
+                const matches = 
+                    (searchTerm === '' || url.toLowerCase().includes(searchTerm) || 
+                     (info.panel && info.panel.toLowerCase().includes(searchTerm))) &&
+                    (letraFilter === '' || info.letra === letraFilter);
+                
+                if (matches) {
+                    mapeosFiltrados[url] = info;
+                }
+            });
+
+            // Ordenar
+            const sorted = Object.entries(mapeosFiltrados).sort((a, b) => {
+                switch(sortBy) {
+                    case 'letra':
+                        return a[1].letra.localeCompare(b[1].letra);
+                    case 'usos':
+                        return (b[1].usos || 0) - (a[1].usos || 0);
+                    case 'reciente':
+                        return new Date(b[1].actualizado) - new Date(a[1].actualizado);
+                    case 'url':
+                    default:
+                        return a[0].localeCompare(b[0]);
+                }
+            });
+
+            mapeosFiltrados = Object.fromEntries(sorted);
+            mostrarResultadosMapeos();
+        }
+
+        function mostrarResultadosMapeos() {
+            const container = document.getElementById('resultsMapeos');
+            const messageContainer = document.getElementById('messageMapeos');
+
+            const cantidad = Object.keys(mapeosFiltrados).length;
+
+            if (cantidad === 0) {
+                messageContainer.innerHTML = `<div class="error">❌ No se encontraron mapeos que coincidan con tu búsqueda</div>`;
+                container.innerHTML = '';
+                return;
+            }
+
+            messageContainer.innerHTML = `<div class="success">✅ Se encontraron ${cantidad} mapeo(s)</div>`;
+
+            const letrasUnicas = [...new Set(Object.values(mapeosFiltrados).map(m => m.letra))].length;
+            const usosTotal = Object.values(mapeosFiltrados).reduce((sum, m) => sum + (m.usos || 0), 0);
+
+            const statsHTML = `
+                <div class="stats">
+                    <div class="stat-card mapeos">
+                        <div class="number">${cantidad}</div>
+                        <div class="label">Mapeos encontrados</div>
+                    </div>
+                    <div class="stat-card mapeos">
+                        <div class="number">${letrasUnicas}</div>
+                        <div class="label">Letras únicas</div>
+                    </div>
+                    <div class="stat-card mapeos">
+                        <div class="number">${usosTotal}</div>
+                        <div class="label">Usos totales</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('statsMapeos').innerHTML = statsHTML;
+
+            let html = '<div class="results-section">';
+            html += `
+                <div class="results-header">
+                    <h2>Mapeos (${cantidad})</h2>
+                    <button class="copy-all-btn" onclick="copiarTodasMapeos()">📋 Copiar todas las URLs</button>
+                </div>
+            `;
+
+            html += `
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%">URL</th>
+                            <th style="width: 10%">Letra</th>
+                            <th style="width: 15%">Panel</th>
+                            <th style="width: 10%">Usos</th>
+                            <th style="width: 25%">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            Object.entries(mapeosFiltrados).forEach(([url, info]) => {
+                html += `
+                    <tr>
+                        <td class="url-cell">${url}</td>
+                        <td><span class="letra-badge">${info.letra}</span></td>
+                        <td>${info.panel || 'Sin panel'}</td>
+                        <td>${info.usos || 0}</td>
+                        <td class="action-buttons">
+                            <button class="copy-btn mapeos" onclick="copiarURL('${url}')">📋 Copiar</button>
+                            <button class="open-btn" onclick="abrirURL('${url}')">🔗 Abrir</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            </div>`;
+
+            container.innerHTML = html;
+        }
+
+        function mostrarErrorMapeos(mensaje) {
+            const container = document.getElementById('messageMapeos');
+            container.innerHTML = `<div class="error">❌ ${mensaje}</div>`;
+        }
+
+        // ==================== FUNCIONES COMPARTIDAS ====================
+
+        function copiarURL(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                alert('✅ URL copiada al portapapeles');
+            }).catch(() => {
+                alert('❌ Error al copiar');
+            });
+        }
+
+        function copiarTodasEtiquetas() {
+            const items = document.querySelectorAll('#resultsEtiquetas .result-url');
+            if (items.length === 0) return;
+
+            const urls = Array.from(items).map(item => item.textContent).join('\n');
+            
+            navigator.clipboard.writeText(urls).then(() => {
+                alert(`✅ ${items.length} URLs copiadas al portapapeles`);
+            }).catch(() => {
+                alert('❌ Error al copiar');
+            });
+        }
+
+        function copiarTodasMapeos() {
+            const urls = Object.keys(mapeosFiltrados).join('\n');
+            
+            navigator.clipboard.writeText(urls).then(() => {
+                alert(`✅ ${Object.keys(mapeosFiltrados).length} URLs copiadas al portapapeles`);
+            }).catch(() => {
+                alert('❌ Error al copiar');
+            });
+        }
+
+        function abrirURL(url) {
+            if (url.startsWith('http')) {
+                window.open(url, '_blank');
+            } else {
+                copiarURL(url);
+                alert('⚠️ URL copiada (no es una URL completa para abrir)');
+            }
+        }
+
+        // Permitir buscar con Enter
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('searchEtiquetas').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') buscarEtiquetas();
+            });
+            document.getElementById('searchMapeos').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') buscarMapeos();
+            });
+        });
+    </script>
+</body>
+</html>
