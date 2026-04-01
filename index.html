@@ -737,7 +737,9 @@
 
             Object.entries(mapeos).forEach(([url, info]) => {
                 const matches = 
-                    (searchTerm === '' || url.toLowerCase().includes(searchTerm)) &&
+                    (searchTerm === '' || 
+                     url.toLowerCase().includes(searchTerm) || 
+                     (info.panel && info.panel.toLowerCase().includes(searchTerm))) &&
                     (letraFilter === '' || info.letra === letraFilter);
                 
                 if (matches) {
@@ -780,12 +782,17 @@
 
             const letrasUnicas = [...new Set(Object.values(mapeosFiltrados).map(m => m.letra))].length;
             const usosTotal = Object.values(mapeosFiltrados).reduce((sum, m) => sum + (m.usos || 0), 0);
+            const paneles = [...new Set(Object.values(mapeosFiltrados).map(m => m.panel || 'Sin panel'))].length;
 
             const statsHTML = `
                 <div class="stats">
                     <div class="stat-card mapeos">
                         <div class="number">${cantidad}</div>
                         <div class="label">Mapeos encontrados</div>
+                    </div>
+                    <div class="stat-card mapeos">
+                        <div class="number">${paneles}</div>
+                        <div class="label">Paneles</div>
                     </div>
                     <div class="stat-card mapeos">
                         <div class="number">${letrasUnicas}</div>
@@ -799,6 +806,21 @@
             `;
             document.getElementById('statsMapeos').innerHTML = statsHTML;
 
+            // Agrupar por panel y luego por letra
+            const mapeosPorPanel = {};
+            Object.entries(mapeosFiltrados).forEach(([url, info]) => {
+                const panel = info.panel || 'Sin panel';
+                const letra = info.letra;
+                
+                if (!mapeosPorPanel[panel]) {
+                    mapeosPorPanel[panel] = {};
+                }
+                if (!mapeosPorPanel[panel][letra]) {
+                    mapeosPorPanel[panel][letra] = [];
+                }
+                mapeosPorPanel[panel][letra].push({ url, info });
+            });
+
             let html = '<div class="results-section">';
             html += `
                 <div class="results-header">
@@ -807,38 +829,59 @@
                 </div>
             `;
 
-            html += `
-                <table class="results-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 40%">URL</th>
-                            <th style="width: 15%">URL</th>
-                            <th style="width: 12%">Letra</th>
-                            <th style="width: 12%">Usos</th>
-                            <th style="width: 31
-                    </thead>
-                    <tbody>
-            `;
-
-            Object.entries(mapeosFiltrados).forEach(([url, info]) => {
+            // Iterar paneles ordenados
+            Object.keys(mapeosPorPanel).sort().forEach(panel => {
                 html += `
-                    <tr>
-                        <td class="url-cell">${url}</td>
-                        <td><span class="letra-badge">${info.letra}</span></td>
-                        <td>${info.panel || 'Sin panel'}</td>
-                        <td>${info.usos || 0}</td>
-                        <td class=" class="copy-btn mapeos" onclick="copiarURL('${url}')">📋 Copiar</button>
-                            <button class="open-btn" onclick="abrirURL('${url}')">🔗 Abrir</button>
-                        </td>
-                    </tr>
+                    <div style="margin-bottom: 30px; border: 2px solid #f5576c; border-radius: 8px; overflow: hidden;">
+                        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 15px; font-weight: bold; font-size: 1.1em;">
+                            📌 ${panel}
+                        </div>
+                `;
+
+                // Iterar letras ordenadas dentro de cada panel
+                Object.keys(mapeosPorPanel[panel]).sort().forEach(letra => {
+                    const enlaces = mapeosPorPanel[panel][letra];
+                    html += `
+                        <div style="padding: 15px; border-bottom: 1px solid #e0e0e0;">
+                            <div style="display: flex; align-items: center; margin-bottom: 12px; gap: 10px;">
+                                <span class="letra-badge">${letra}</span>
+                                <span style="color: #999; font-size: 0.9em;">(${enlaces.length} link${enlaces.length > 1 ? 's' : ''})</span>
+                            </div>
+                            <div style="display: grid; gap: 10px;">
+                    `;
+
+                    // Mostrar cada link
+                    enlaces.forEach(({ url, info }) => {
+                        html += `
+                            <div style="background: #f9f9f9; padding: 10px; border-radius: 6px; border-left: 3px solid #f5576c;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px;">
+                                    <div style="flex: 1; min-width: 0;">
+                                        <div class="url-cell" style="margin: 0; word-break: break-all;">${url}</div>
+                                        <div style="font-size: 0.8em; color: #999; margin-top: 4px;">
+                                            Usos: ${info.usos || 0} | Actualizado: ${new Date(info.actualizado).toLocaleDateString('es-ES')}
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 6px; flex-shrink: 0;">
+                                        <button class="copy-btn mapeos" onclick="copiarURL('${url}')">📋</button>
+                                        <button class="open-btn" onclick="abrirURL('${url}')">🔗</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    </div>
                 `;
             });
 
-            html += `
-                    </tbody>
-                </table>
-            </div>`;
-
+            html += '</div>';
             container.innerHTML = html;
         }
 
